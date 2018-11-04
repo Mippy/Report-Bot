@@ -27,7 +27,13 @@ async def on_message(x):
     if x.channel.id == 408777469290872843:
         if x.author.id != 408776943610363904 or x.author.id != 169275259026014208:
             await x.delete()
-        elif x.author.id != 408776943610363904:
+        elif x.author.id == 408776943610363904:
+            await asyncio.sleep(10)
+            await x.delete()
+    if x.channel.id == 409739062182674432:
+        if x.author.id != 409734806637641728 or x.author.id != 169275259026014208:
+            await x.delete()
+        elif x.author.id == 409734806637641728:
             await asyncio.sleep(10)
             await x.delete()
     else:

@@ -10,13 +10,13 @@ bot.remove_command('help')
 async def on_message(x):
     if x.author.id != 169275259026014208:
         if x.channel.id == 408777469290872843:
-            if x.author.id != 408776943610363904:
+            if x.author.id == 408776943610363904:
                 await x.delete()
             else:
                 await asyncio.sleep(10)
                 await x.delete()
         if x.channel.id == 409739062182674432:
-            if x.author.id != 409734806637641728:
+            if x.author.id == 409734806637641728:
                 await x.delete()
             else:
                 await asyncio.sleep(10)

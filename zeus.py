@@ -41,9 +41,9 @@ async def on_message(x):
             return
         if x.channel.id == reportchannel and not x.content.startswith('!report'):
             await x.delete()
+        if x.author.id in rs:
+            return
         else:
-            if x.author.id in rs:
-                return
             await bot.process_commands(x)
 
 @bot.command()

@@ -9,6 +9,10 @@ with open('config.json') as fp:
     data = json.load(fp)
     token = data['token']
     reportchannel = data['reportchannel']
+    queuechannel = data['queuechannel']
+    logchannel = data['logchannel']
+    dbname = data['database']
+    dbpassword = data['dbpassword']
 
 bot = commands.AutoShardedBot(command_prefix='!', case_insensitive=True, activity=discord.Game(name='on Sky Kingdoms'), status=discord.Status.dnd)
 bot.remove_command('help')
@@ -83,6 +87,9 @@ async def report(ctx):
     offenses = await requestinfo(f"What rules did `{username}` break?")
     if not offenses:
         return
+    gamemode = await requestinfo(f"Which gamemode did this occur on?")
+    if not gamemode:
+        return
     proof = await requestinfo(f"Please upload proof of these offences happening. (link, or file upload)")
     if not proof:
         return
@@ -111,7 +118,7 @@ async def report(ctx):
     try:
         lrs.remove(reporter.id)
     except: pass
-    cmdmsg = await ctx.send(f'{reporter.mention}, is the following information correct?\n\n**Username:** {username}\n**Offences:** {offenses}\n**Proof:** {proof}\n**Comments:** {comments}\n\nConfirmation here will send your report to the staff team.')
+    cmdmsg = await ctx.send(f'{reporter.mention}, is the following information correct?\n\n**Username:** {username}\n**Offences:** {offenses}\n**Gamemode:** {gamemode}\n**Proof:** {proof}\n**Comments:** {comments}\n\nConfirmation here will send your report to the staff team.')
     await cmdmsg.add_reaction('✅')
     await cmdmsg.add_reaction('❌')
     try:
@@ -132,8 +139,18 @@ async def report(ctx):
         except: pass
         rs.remove(reporter.id)
         cmdmsg = await ctx.send(f'{reporter.mention}, thanks for your report!\nYou will receive updates about your report in a private message from me.')
+        queue = ctx.guild.get_channel(queuechannel)
+        qmsg = await queue.send(f'───────────────────\n**{reporter}** ({reporter.mention}) Reported:\n\n**Username:** {username}\n**Offences:** {offenses}\n**Gamemode:** {gamemode}\n**Proof:** {proof}\n**Additonal Comments:** {comments}\n\nThe report above needs to be approved, or denied.')
+        await qmsg.add_reaction('✅')
+        await qmsg.add_reaction('❌')
         await asyncio.sleep(20)
         await cmdmsg.delete()
+    else:
+        await cmdmsg.delete()
+        rs.remove(reporter.id)
+        cmdmsg = await ctx.send(f'{reporter.mention}, alright, your report has been closed. You can always open another using `!report`.')
+        await asyncio.sleep(20)
+        return await cmdmsg.delete()
 
 
 bot.run(token)

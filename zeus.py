@@ -24,41 +24,51 @@ rs = []
 async def on_message(x):
     if x.author.id == bot.user.id:
         return
-    if x.channel.id == 408777469290872843:
+    if x.channel.id == 408777469290872843: # rank sync checkers
         if x.author.id != 408776943610363904 or x.author.id != 169275259026014208:
             await x.delete()
         elif x.author.id == 408776943610363904:
             await asyncio.sleep(10)
             await x.delete()
-    if x.channel.id == 409739062182674432:
+    if x.channel.id == 409739062182674432: # rank sync checkers
         if x.author.id != 409734806637641728 or x.author.id != 169275259026014208:
             await x.delete()
         elif x.author.id == 409734806637641728:
             await asyncio.sleep(10)
             await x.delete()
     else:
-        if x.author.id in lrs:
+        if x.author.id in lrs: # if the bot is expecting a response, don't do anything with the message here
             return
-        if x.channel.id == reportchannel and not x.content.startswith('!report'):
+        if x.author.id in rs: # check if bot needs response to either a poll or a text question
+            return await x.delete()
+        if x.channel.id == queuechannel:
             await x.delete()
-        if x.author.id in rs:
-            return
-        else:
+        if x.channel.id == logchannel:
+            await x.delete
+        if x.channel.id == reportchannel and not x.content.startswith('!report'): # if there's a message in #reports that isn't !report or a response
+            await x.delete()
+            cmdmsg = await x.channel.send(f'{x.author.mention}, to begin a report, try `!report`.')
+            await asyncio.sleep(5)
+            return await cmdmsg.delete()
+        else: # allow command
             await bot.process_commands(x)
 
 @bot.command()
 async def report(ctx):
     reporter = ctx.author
     cmdmsg = ctx.message
+    if ctx.channel.id != reportchannel:
+        await ctx.message.delete()
+        cmdmsg = await ctx.send(f'{reporter.mention}, please send your request in <#{reportchannel}> instead.')
+        await asyncio.sleep(5)
+        return await cmdmsg.delete()
     lrs.append(reporter.id)
     rs.append(reporter.id)
-    if ctx.channel.id != reportchannel:
-        return await ctx.send(f'{reporter.mention}, please send your request in <#{reportchannel}> instead.')
     await cmdmsg.delete()
     def check(x):
         return x.author.id == reporter.id and x.channel.id == ctx.channel.id
     def check2(x, y):
-        return str(x.emoji) == '✅' or str(x.emoji) == '❌' and y.id == reporter.id
+        return (str(x.emoji) == '✅' or str(x.emoji) == '❌') and y.id == reporter.id
     async def requestinfo(message):
         cmdmsg = await ctx.send(f'{reporter.mention}\n\n**{message}**')
         try:
@@ -124,7 +134,13 @@ async def report(ctx):
     try:
         lrs.remove(reporter.id)
     except: pass
-    cmdmsg = await ctx.send(f'{reporter.mention}, is the following information correct?\n\n**Username:** {username}\n**Offences:** {offenses}\n**Gamemode:** {gamemode}\n**Proof:** {proof}\n**Comments:** {comments}\n\nConfirmation here will send your report to the staff team.')
+    try:
+        cmdmsg = await ctx.send(f'{reporter.mention}, is the following information correct?\n\n**Username:** {username}\n**Offences:** {offenses}\n**Gamemode:** {gamemode}\n**Proof:** {proof}\n**Comments:** {comments}\n\nConfirmation here will send your report to the staff team.')
+    except:
+        rs.remove(reporter.id)
+        cmdmsg = await ctx.send(f'{reporter.mention}, it appears your report is too long. Please rephrase your report so it may be submitted properly.')
+        await asyncio.sleep(10)
+        return await cmdmsg.delete()
     await cmdmsg.add_reaction('✅')
     await cmdmsg.add_reaction('❌')
     try:
@@ -157,6 +173,5 @@ async def report(ctx):
         cmdmsg = await ctx.send(f'{reporter.mention}, alright, your report has been closed. You can always open another using `!report`.')
         await asyncio.sleep(20)
         return await cmdmsg.delete()
-
 
 bot.run(token)

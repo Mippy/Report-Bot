@@ -15,6 +15,12 @@ async def on_message(x):
             else:
                 await asyncio.sleep(10)
                 await x.delete()
+        if x.channel.id == 409739062182674432:
+            if x.author.id != 409734806637641728:
+                await x.delete()
+            else:
+                await asyncio.sleep(10)
+                await x.delete()
 
 with open('config.json') as fp:
     data = json.load(fp)

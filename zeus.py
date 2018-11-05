@@ -5,20 +5,34 @@ import asyncio
 import json
 import random
 
-with open('config.json') as fp:
-    data = json.load(fp)
-    token = data['token']
-    reportchannel = data['reportchannel']
-    queuechannel = data['queuechannel']
-    logchannel = data['logchannel']
-    dbname = data['database']
-    dbpassword = data['dbpassword']
+fp = open('config.json')
+data = json.load(fp)
+token = data['token']
+reportchannel = data['reportchannel']
+queuechannel = data['queuechannel']
+logchannel = data['logchannel']
+dbname = data['database']
+dbpassword = data['dbpassword']
+serverid = data['server']
+fp.close()
 
 bot = commands.AutoShardedBot(command_prefix='!', case_insensitive=True, activity=discord.Game(name='on Sky Kingdoms'), status=discord.Status.dnd)
 bot.remove_command('help')
 
 lrs = []
 rs = []
+qmr = []
+
+def is_staff(user):
+    server = bot.get_guild(int(serverid))
+    helper = discord.utils.get(server.roles, name='Helper')
+    moderator = discord.utils.get(server.roles, name='Moderator')
+    admin = discord.utils.get(server.roles, name='Admin')
+    owner = discord.utils.get(server.roles, name='Owner')
+    user = server.get_member(user.id)
+    if user in helper.members or user in moderator.members or user in admin.members or owner.members:
+        return True
+    return False
 
 @bot.event
 async def on_message(x):
@@ -37,14 +51,16 @@ async def on_message(x):
             await asyncio.sleep(10)
             await x.delete()
     else:
+        if x.guild.id != serverid:
+            return
         if x.author.id in lrs: # if the bot is expecting a response, don't do anything with the message here
             return
         if x.author.id in rs: # check if bot needs response to either a poll or a text question
-            return await x.delete()
+            return
         if x.channel.id == queuechannel:
             await x.delete()
         if x.channel.id == logchannel:
-            await x.delete
+            await x.delete()
         if x.channel.id == reportchannel and not x.content.startswith('!report'): # if there's a message in #reports that isn't !report or a response
             await x.delete()
             cmdmsg = await x.channel.send(f'{x.author.mention}, to begin a report, try `!report`.')
@@ -52,6 +68,145 @@ async def on_message(x):
             return await cmdmsg.delete()
         else: # allow command
             await bot.process_commands(x)
+
+@bot.event
+async def on_raw_reaction_add(payload):
+    fp = open('config.json')
+    data = json.load(fp)
+    queuechannel = data['queuechannel']
+    logchannel = data['logchannel']
+    fp.close()
+    emojiname = payload.emoji.name
+    server = bot.get_guild(serverid)
+    user = server.get_member(payload.user_id)
+    if payload.channel_id != queuechannel:
+        return
+    if not is_staff(user):
+        return
+    if user.id in rs:
+        return
+    if payload.message_id in qmr:
+        return
+    def check(x, y):
+        return (str(x.emoji) == '✅' or str(x.emoji) == '❌') and y.id == user.id
+    cnx = mysql.connector.connect(user='root', host='localhost', password=dbpassword, database=dbname)
+    cursor = cnx.cursor()
+    cursor.execute(f"SELECT * FROM reports WHERE messageid='{payload.message_id}'")
+    findata = []
+    for data in cursor:
+        findata.append(data)
+    cursor.close()
+    cnx.close()
+    if findata:
+        findata = findata
+        channel = server.get_channel(queuechannel)
+        message = await channel.get_message(payload.message_id)
+        queuechannel = server.get_channel(queuechannel)
+        logchannel = server.get_channel(logchannel)
+        def check2(x):
+            return x.author.id == user.id and x.channel.id == queuechannel.id
+        if emojiname == '✅':
+            rs.append(user.id)
+            cmdmsg = await queuechannel.send(f'{user.mention}, it looks like you\'ve approved a report. Would you like to add a comment? (This will be sent to the user)')
+            qmr.append(cmdmsg.id)
+            await cmdmsg.add_reaction('✅')
+            await cmdmsg.add_reaction('❌')
+            try:
+                reaction = await bot.wait_for('reaction_add', check=check, timeout=30.0)
+            except asyncio.TimeoutError:
+                rs.remove(user.id)
+                await cmdmsg.delete()
+                try:
+                    return await message.remove_reaction(emoji='✅', member=user)
+                except: pass
+            rs.remove(user.id)
+            if str(reaction[0].emoji) == '✅':
+                await cmdmsg.delete()
+                cmdmsg = await queuechannel.send(f'{user.mention}, what is your comment?')
+                try:
+                    msg = await bot.wait_for('message', check=check2, timeout=60.0)
+                except asyncio.TimeoutError:
+                    await cmdmsg.delete()
+                    try:
+                        return await message.remove_reaction(emoji='✅', member=user)
+                    except: pass
+                comment = msg.content
+                await cmdmsg.delete()
+            if str(reaction[0].emoji) == '❌':
+                comment = None
+                await cmdmsg.delete()
+            splitdata = message.content.split('The report above needs to be approved, or denied.')
+            if not comment:
+                logmessage = splitdata[0] + f"**Report approved by {user} ({user.mention}).**"
+            else:
+                logmessage = splitdata[0] + f"**Report approved by {user} ({user.mention}) with the comment `{comment}`.**"
+            await logchannel.send(logmessage)
+            await message.delete()
+            try:
+                await msg.delete()
+            except: pass
+            cmdmsg = await queuechannel.send(f'{user.mention} report successfully approved. :white_check_mark:')
+            reporter = server.get_member(int(findata[0][1]))
+            try:
+                if not comment:
+                    await reporter.send(f"Hey {reporter.mention},\nIt's your friendly neighbourhood robot here to say that your report against {findata[0][2]} has been APPROVED!\nThanks for helping us out!")
+                else:
+                    await reporter.send(f"Hey {reporter.mention},\nIt's your friendly neighbourhood robot here to say that your report against {findata[0][2]} has been APPROVED!\nThanks for helping us out!\n\nP.S.: The staff member that approved your report left this comment: `{comment}`.")
+            except: pass
+            await asyncio.sleep(15)
+            return await cmdmsg.delete()
+        elif emojiname == '❌':
+            rs.append(user.id)
+            cmdmsg = await queuechannel.send(f'{user.mention}, it looks like you\'ve denied a report. Would you like to add a comment? (This will be sent to the user)')
+            qmr.append(cmdmsg.id)
+            await cmdmsg.add_reaction('✅')
+            await cmdmsg.add_reaction('❌')
+            try:
+                reaction = await bot.wait_for('reaction_add', check=check, timeout=30.0)
+            except asyncio.TimeoutError:
+                rs.remove(user.id)
+                await cmdmsg.delete()
+                try:
+                    return await message.remove_reaction(emoji='❌', member=user)
+                except: pass
+            rs.remove(user.id)
+            if str(reaction[0].emoji) == '✅':
+                await cmdmsg.delete()
+                cmdmsg = await queuechannel.send(f'{user.mention}, what is your comment?')
+                try:
+                    msg = await bot.wait_for('message', check=check2, timeout=60.0)
+                except asyncio.TimeoutError:
+                    await cmdmsg.delete()
+                    try:
+                        return await message.remove_reaction(emoji='❌', member=user)
+                    except: pass
+                comment = msg.content
+                await cmdmsg.delete()
+            if str(reaction[0].emoji) == '❌':
+                comment = None
+                await cmdmsg.delete()
+            splitdata = message.content.split('The report above needs to be approved, or denied.')
+            if not comment:
+                logmessage = splitdata[0] + f"**Report denied by {user} ({user.mention}).**"
+            else:
+                logmessage = splitdata[0] + f"**Report denied by {user} ({user.mention}) with the comment `{comment}`.**"
+            await logchannel.send(logmessage)
+            await message.delete()
+            try:
+                await msg.delete()
+            except: pass
+            cmdmsg = await queuechannel.send(f'{user.mention} report successfully denied. :white_check_mark:')
+            reporter = server.get_member(int(findata[0][1]))
+            try:
+                if not comment:
+                    await reporter.send(f"Hey {reporter.mention},\nIt's your friendly neighbourhood robot here to say that your report against {findata[0][2]} has been denied.\nThanks for trying to help us out, anyway! Good luck next time.")
+                else:
+                    await reporter.send(f"Hey {reporter.mention},\nIt's your friendly neighbourhood robot here to say that your report against {findata[0][2]} has been denied.\nThanks for trying to help us out, anyway! Good luck next time.\n\nP.S.: The staff member that denied your report left this comment: `{comment}`.")
+            except: pass
+            await asyncio.sleep(15)
+            return await cmdmsg.delete()
+    else:
+        return
 
 @bot.command()
 async def report(ctx):
@@ -91,6 +246,9 @@ async def report(ctx):
                 data = f'https://i.williamlomas.me/zeusuploads/{filehash}.{ext}'
         else:
             data = msg.content
+            if message.startswith("What i"):
+                data = data.split()
+                data = data[0]
         if not data:
             data = msg.content
         await cmdmsg.delete()
@@ -165,6 +323,13 @@ async def report(ctx):
         qmsg = await queue.send(f'───────────────────\n**{reporter}** ({reporter.mention}) Reported:\n\n**Username:** {username}\n**Offences:** {offenses}\n**Gamemode:** {gamemode}\n**Proof:** {proof}\n**Additonal Comments:** {comments}\n\nThe report above needs to be approved, or denied.')
         await qmsg.add_reaction('✅')
         await qmsg.add_reaction('❌')
+        cnx = mysql.connector.connect(user='root', host='localhost', password=dbpassword, database=dbname)
+        cursor = cnx.cursor()
+        sql = f"INSERT INTO reports (messageid,reporterid,defence) VALUES ('{qmsg.id}','{reporter.id}','{username}')"
+        cursor.execute(sql)
+        cnx.commit()
+        cursor.close()
+        cnx.close()
         await asyncio.sleep(20)
         await cmdmsg.delete()
     else:

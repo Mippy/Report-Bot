@@ -137,9 +137,9 @@ async def on_raw_reaction_add(payload):
                 await cmdmsg.delete()
             splitdata = message.content.split('The report above needs to be approved, or denied.')
             if not comment:
-                logmessage = splitdata[0] + f"**Report approved by {user} ({user.mention}).**"
+                logmessage = splitdata[0] + f"**Report approved by {user} ({user.mention}).** :white_check_mark:"
             else:
-                logmessage = splitdata[0] + f"**Report approved by {user} ({user.mention}) with the comment `{comment}`.**"
+                logmessage = splitdata[0] + f"**Report approved by {user} ({user.mention}) with the comment `{comment}`.** :white_check_mark:"
             await logchannel.send(logmessage)
             await message.delete()
             try:
@@ -187,9 +187,9 @@ async def on_raw_reaction_add(payload):
                 await cmdmsg.delete()
             splitdata = message.content.split('The report above needs to be approved, or denied.')
             if not comment:
-                logmessage = splitdata[0] + f"**Report denied by {user} ({user.mention}).**"
+                logmessage = splitdata[0] + f"**Report denied by {user} ({user.mention}).** :x:"
             else:
-                logmessage = splitdata[0] + f"**Report denied by {user} ({user.mention}) with the comment `{comment}`.**"
+                logmessage = splitdata[0] + f"**Report denied by {user} ({user.mention}) with the comment `{comment}`.** :x:"
             await logchannel.send(logmessage)
             await message.delete()
             try:

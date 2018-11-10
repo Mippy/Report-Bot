@@ -30,7 +30,7 @@ def is_staff(user):
     admin = discord.utils.get(server.roles, name='Admin')
     owner = discord.utils.get(server.roles, name='Owner')
     user = server.get_member(user.id)
-    if user in helper.members or user in moderator.members or user in admin.members or owner.members:
+    if user in helper.members or user in moderator.members or user in admin.members or user in owner.members:
         return True
     return False
 

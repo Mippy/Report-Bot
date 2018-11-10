@@ -112,7 +112,7 @@ async def on_raw_reaction_add(payload):
             await cmdmsg.add_reaction('✅')
             await cmdmsg.add_reaction('❌')
             try:
-                reaction = await bot.wait_for('reaction_add', check=check, timeout=30.0)
+                reaction = await bot.wait_for('reaction_add', check=check, timeout=60.0)
             except asyncio.TimeoutError:
                 rs.remove(user.id)
                 await cmdmsg.delete()
@@ -124,7 +124,7 @@ async def on_raw_reaction_add(payload):
                 await cmdmsg.delete()
                 cmdmsg = await queuechannel.send(f'{user.mention}, what is your comment?')
                 try:
-                    msg = await bot.wait_for('message', check=check2, timeout=60.0)
+                    msg = await bot.wait_for('message', check=check2, timeout=120.0)
                 except asyncio.TimeoutError:
                     await cmdmsg.delete()
                     try:
@@ -162,7 +162,7 @@ async def on_raw_reaction_add(payload):
             await cmdmsg.add_reaction('✅')
             await cmdmsg.add_reaction('❌')
             try:
-                reaction = await bot.wait_for('reaction_add', check=check, timeout=30.0)
+                reaction = await bot.wait_for('reaction_add', check=check, timeout=60.0)
             except asyncio.TimeoutError:
                 rs.remove(user.id)
                 await cmdmsg.delete()
@@ -174,7 +174,7 @@ async def on_raw_reaction_add(payload):
                 await cmdmsg.delete()
                 cmdmsg = await queuechannel.send(f'{user.mention}, what is your comment?')
                 try:
-                    msg = await bot.wait_for('message', check=check2, timeout=60.0)
+                    msg = await bot.wait_for('message', check=check2, timeout=120.0)
                 except asyncio.TimeoutError:
                     await cmdmsg.delete()
                     try:
@@ -227,10 +227,10 @@ async def report(ctx):
     async def requestinfo(message):
         cmdmsg = await ctx.send(f'{reporter.mention}\n\n**{message}**')
         try:
-            msg = await bot.wait_for('message', check=check, timeout=60.0)
+            msg = await bot.wait_for('message', check=check, timeout=120.0)
         except asyncio.TimeoutError:
             await cmdmsg.delete()
-            msg = await ctx.send(f'{reporter.mention}, since it has been over a minute without a response, this report has been closed automatically.\nYou can always open another with `!report`.')
+            msg = await ctx.send(f'{reporter.mention}, since it has been over a couple minutes without a response, this report has been closed automatically.\nYou can always open another with `!report`.')
             lrs.remove(reporter.id)
             rs.remove(reporter.id)
             await asyncio.sleep(30)
@@ -272,10 +272,10 @@ async def report(ctx):
     await cmdmsg.add_reaction('✅')
     await cmdmsg.add_reaction('❌')
     try:
-        reaction = await bot.wait_for('reaction_add', check=check2, timeout=60.0)
+        reaction = await bot.wait_for('reaction_add', check=check2, timeout=120.0)
     except asyncio.TimeoutError:
         await cmdmsg.delete()
-        msg = await ctx.send(f'{reporter.mention}, since it has been over a minute without a response, this report has been closed automatically.\nYou can always open another with `!report`.')
+        msg = await ctx.send(f'{reporter.mention}, since it has been over a couple minutes without a response, this report has been closed automatically.\nYou can always open another with `!report`.')
         lrs.remove(reporter.id)
         rs.remove(reporter.id)
         await asyncio.sleep(30)
@@ -302,10 +302,10 @@ async def report(ctx):
     await cmdmsg.add_reaction('✅')
     await cmdmsg.add_reaction('❌')
     try:
-        reaction = await bot.wait_for('reaction_add', check=check2, timeout=60.0)
+        reaction = await bot.wait_for('reaction_add', check=check2, timeout=120.0)
     except asyncio.TimeoutError:
         await cmdmsg.delete()
-        msg = await ctx.send(f'{reporter.mention}, since it has been over a minute without a response, this report has been closed automatically.\nYou can always open another with `!report`.')
+        msg = await ctx.send(f'{reporter.mention}, since it has been over a couple minutes without a response, this report has been closed automatically.\nYou can always open another with `!report`.')
         try:
             lrs.remove(reporter.id)
         except: pass

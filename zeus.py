@@ -56,7 +56,7 @@ async def on_message(x):
         if x.author.id in lrs: # if the bot is expecting a response, don't do anything with the message here
             return
         if x.author.id in rs: # check if bot needs response to either a poll or a text question
-            return
+            return await x.delete()
         if x.channel.id == queuechannel:
             await x.delete()
         if x.channel.id == logchannel:

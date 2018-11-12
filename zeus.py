@@ -16,7 +16,12 @@ dbpassword = data['dbpassword']
 serverid = data['server']
 fp.close()
 
-bot = commands.AutoShardedBot(command_prefix='!', case_insensitive=True, activity=discord.Game(name='on Sky Kingdoms'), status=discord.Status.dnd)
+if serverid == 269112125316661248:
+    servername = "Sky Kingdoms"
+if serverid == 260867503373156355:
+    servername = "Project Wonder"
+
+bot = commands.AutoShardedBot(command_prefix='!', case_insensitive=True, activity=discord.Game(name=f'on {servername}'), status=discord.Status.dnd)
 bot.remove_command('help')
 
 lrs = []

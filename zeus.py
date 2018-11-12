@@ -77,7 +77,7 @@ async def on_message(x):
         if findata:
             await x.delete()
             msg = await x.channel.send(f'{x.author.mention}, sorry! It looks like you\'ve been blocked from sending reports.\nYour report can be sent on the forums: https://www.skykingdoms.net.')
-            await asyncio.sleep(10)
+            await asyncio.sleep(20)
             await msg.delete()
         else: # allow command
             await bot.process_commands(x)

@@ -66,6 +66,19 @@ async def on_message(x):
             cmdmsg = await x.channel.send(f'{x.author.mention}, to begin a report, try `!report`.')
             await asyncio.sleep(5)
             return await cmdmsg.delete()
+        cnx = mysql.connector.connect(user='root', host='localhost', password=dbpassword, database=dbname)
+        cursor = cnx.cursor()
+        cursor.execute(f"SELECT * FROM blacklist WHERE id='{x.author.id}'")
+        findata = []
+        for data in cursor:
+            findata.append(data)
+        cursor.close()
+        cnx.close()
+        if findata:
+            await x.delete()
+            msg = await x.channel.send(f'{x.author.mention}, sorry! It looks like you\'ve been blocked from sending reports.\nYour report can be sent on the forums: https://www.skykingdoms.net.')
+            await asyncio.sleep(10)
+            await msg.delete()
         else: # allow command
             await bot.process_commands(x)
 

@@ -316,7 +316,7 @@ async def report(ctx):
         lrs.remove(reporter.id)
     except: pass
     try:
-        cmdmsg = await ctx.send(f'{reporter.mention}, is the following information correct?\n\n**Username:** {username}\n**Offences:** {offenses}\n**Gamemode:** {gamemode}\n**Proof:** {proof}\n**Comments:** {comments}\n\nConfirmation here will send your report to the staff team.')
+        cmdmsg = await ctx.send(f'{reporter.mention}, **are you sure you would like to send this report to the staff team?:**\n\n**Username:** {username}\n**Offences:** {offenses}\n**Gamemode:** {gamemode}\n**Proof:** {proof}\n**Comments:** {comments}\n\nConfirmation here will send your report to the staff team.')
     except:
         rs.remove(reporter.id)
         cmdmsg = await ctx.send(f'{reporter.mention}, it appears your report is too long. Please rephrase your report so it may be submitted properly.')

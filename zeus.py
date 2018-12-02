@@ -233,6 +233,7 @@ async def on_raw_reaction_add(payload):
 
 @bot.command()
 async def report(ctx):
+    proof = "fail"
     reporter = ctx.author
     cmdmsg = ctx.message
     if ctx.channel.id != reportchannel:
@@ -247,7 +248,7 @@ async def report(ctx):
         return x.author.id == reporter.id and x.channel.id == ctx.channel.id
     def check2(x, y):
         return (str(x.emoji) == '✅' or str(x.emoji) == '❌') and y.id == reporter.id
-    async def requestinfo(message):
+    async def requestinfo(message, proof=""):
         cmdmsg = await ctx.send(f'{reporter.mention}\n\n**{message}**')
         try:
             msg = await bot.wait_for('message', check=check, timeout=120.0)
@@ -267,8 +268,15 @@ async def report(ctx):
                 ext = ext[0]
                 await attachment.save(fp=f'/var/www/i.williamlomas.me/zeusuploads/{filehash}.{ext}')
                 data = f'https://i.williamlomas.me/zeusuploads/{filehash}.{ext}'
+                proof = data
+                await cmdmsg.delete()
+                await msg.delete()
+                return proof
         else:
-            data = msg.content
+            if proof != "":
+                data = data + f'\n{msg.content}'
+            else:
+                data = msg.content
             if message.startswith("What i"):
                 data = data.split()
                 data = data[0]
@@ -277,6 +285,43 @@ async def report(ctx):
         await cmdmsg.delete()
         await msg.delete()
         return data
+
+    async def requestproof(ctx, proof=""):
+        async def requestupload(ctx, pr):
+            proof = await requestinfo(f"Please upload proof of these offences happening. (link, or file upload)", proof=pr)
+            if not proof:
+                return
+            return proof
+        async def requestmore(ctx, pr):
+            lrs.remove(reporter.id)
+            cmdmsg = await ctx.send(f"**Do you have any additional proof?**")
+            await cmdmsg.add_reaction('✅')
+            await cmdmsg.add_reaction('❌')
+            try:
+                reaction = await bot.wait_for('reaction_add', check=check2, timeout=120.0)
+            except asyncio.TimeoutError:
+                await cmdmsg.delete()
+                msg = await ctx.send(f'{reporter.mention}, since it has been over a couple minutes without a response, this report has been closed automatically.\nYou can always open another with `!report`.')
+                lrs.remove(reporter.id)
+                rs.remove(reporter.id)
+                await asyncio.sleep(30)
+                await msg.delete()
+                return "timedout"
+            if str(reaction[0].emoji) == '✅':
+                lrs.append(reporter.id)
+                await cmdmsg.delete()
+                pr = await requestproof(ctx, proof=pr)
+                pr = proof + '\n' + pr
+                return pr
+            else:
+                await cmdmsg.delete()
+                return pr
+        ru = await requestupload(ctx, proof)
+        if not ru:
+            return
+        proof = ru
+        proof = await requestmore(ctx, proof)
+        return proof
 
     username = await requestinfo("What is the username of the person you are reporting?")
     if not username:
@@ -287,11 +332,10 @@ async def report(ctx):
     gamemode = await requestinfo(f"Which gamemode did this occur on?")
     if not gamemode:
         return
-    proof = await requestinfo(f"Please upload proof of these offences happening. (link, or file upload)")
-    if not proof:
+    proof = await requestproof(ctx)
+    if proof == "fail":
         return
     cmdmsg = await ctx.send(f'{reporter.mention}\n\n**Do you have any additional comments? (React accordingly)**')
-    lrs.remove(reporter.id)
     await cmdmsg.add_reaction('✅')
     await cmdmsg.add_reaction('❌')
     try:
@@ -312,9 +356,6 @@ async def report(ctx):
     else:
         await cmdmsg.delete()
         comments = 'None'
-    try:
-        lrs.remove(reporter.id)
-    except: pass
     try:
         cmdmsg = await ctx.send(f'{reporter.mention}, **are you sure you would like to send this report to the staff team?:**\n\n**Username:** {username}\n**Offences:** {offenses}\n**Gamemode:** {gamemode}\n**Proof:** {proof}\n**Comments:** {comments}\n\nConfirmation here will send your report to the staff team.')
     except:

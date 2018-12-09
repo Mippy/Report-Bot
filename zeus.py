@@ -71,12 +71,12 @@ async def on_message(x):
             await x.delete()
         if x.channel.id == logchannel:
             await x.delete()
-        if x.channel.id == reportchannel and not x.content.startswith('!report '): # if there's a message in #reports that isn't !report or a response
+        if x.channel.id == reportchannel and x.content.split()[0] != '!report': # if there's a message in #reports that isn't !report or a response
             await x.delete()
             cmdmsg = await x.channel.send(f'{x.author.mention}, to begin a report, try `!report`.')
             await asyncio.sleep(5)
             return await cmdmsg.delete()
-        if x.channel.id == reportchannel and x.content.startswith('!report '):
+        if x.channel.id == reportchannel and x.content.split()[0] == '!report':
             cnx = mysql.connector.connect(user='root', host='localhost', password=dbpassword, database=dbname)
             cursor = cnx.cursor()
             cursor.execute(f"SELECT * FROM blacklist WHERE id='{x.author.id}'")

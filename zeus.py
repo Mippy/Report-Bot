@@ -71,6 +71,11 @@ async def on_message(x):
             await x.delete()
         if x.channel.id == logchannel:
             await x.delete()
+        if not x.content:
+            await x.delete()
+            cmdmsg = await x.channel.send(f'{x.author.mention}, to begin a report, try `!report`.')
+            await asyncio.sleep(5)
+            return await cmdmsg.delete()
         if x.channel.id == reportchannel and x.content.split()[0] != '!report': # if there's a message in #reports that isn't !report or a response
             await x.delete()
             cmdmsg = await x.channel.send(f'{x.author.mention}, to begin a report, try `!report`.')

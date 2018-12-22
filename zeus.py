@@ -356,6 +356,7 @@ async def report(ctx):
         lrs.append(reporter.id)
         await cmdmsg.delete()
         comments = await requestinfo("What are those additional comments?")
+        lrs.remove(reporter.id)
         if not comments:
             return
     else:
@@ -403,6 +404,9 @@ async def report(ctx):
         await cmdmsg.delete()
     else:
         await cmdmsg.delete()
+        try:
+            lrs.remove(reporter.id)
+        except: pass
         rs.remove(reporter.id)
         cmdmsg = await ctx.send(f'{reporter.mention}, alright, your report has been closed. You can always open another using `!report`.')
         await asyncio.sleep(20)

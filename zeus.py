@@ -299,7 +299,7 @@ async def report(ctx):
             return proof
         async def requestmore(ctx, pr):
             lrs.remove(reporter.id)
-            cmdmsg = await ctx.send(f"**Do you have any additional proof?**")
+            cmdmsg = await ctx.send(f"{reporter.mention}\n\n**Do you have any additional proof?**")
             await cmdmsg.add_reaction('✅')
             await cmdmsg.add_reaction('❌')
             try:

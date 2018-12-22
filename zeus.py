@@ -68,10 +68,10 @@ async def on_message(x):
         if x.author.id in rs: # check if bot needs response to either a poll or a text question
             return await x.delete()
         if x.channel.id == queuechannel:
-            await x.delete()
+            return await x.delete()
         if x.channel.id == logchannel:
-            await x.delete()
-        if not x.content:
+            return await x.delete()
+        if x.channel.id == reportchannel and not x.content:
             await x.delete()
             cmdmsg = await x.channel.send(f'{x.author.mention}, to begin a report, try `!report`.')
             await asyncio.sleep(5)

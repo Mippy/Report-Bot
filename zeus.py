@@ -238,7 +238,6 @@ async def on_raw_reaction_add(payload):
 
 @bot.command()
 async def report(ctx):
-    proof = "fail"
     reporter = ctx.author
     cmdmsg = ctx.message
     if ctx.channel.id != reportchannel:
@@ -307,16 +306,17 @@ async def report(ctx):
             except asyncio.TimeoutError:
                 await cmdmsg.delete()
                 msg = await ctx.send(f'{reporter.mention}, since it has been over a couple minutes without a response, this report has been closed automatically.\nYou can always open another with `!report`.')
-                lrs.remove(reporter.id)
                 rs.remove(reporter.id)
                 await asyncio.sleep(30)
                 await msg.delete()
-                return "timedout"
+                return
             if str(reaction[0].emoji) == '✅':
                 lrs.append(reporter.id)
                 await cmdmsg.delete()
                 pr = await requestproof(ctx, proof=pr)
-                pr = proof + '\n' + pr
+                if not pr:
+                    return
+                pr = '\n' + proof + '\n' + pr
                 return pr
             else:
                 await cmdmsg.delete()
@@ -338,7 +338,7 @@ async def report(ctx):
     if not gamemode:
         return
     proof = await requestproof(ctx)
-    if proof == "fail":
+    if not proof:
         return
     cmdmsg = await ctx.send(f'{reporter.mention}\n\n**Do you have any additional comments? (React accordingly)**')
     await cmdmsg.add_reaction('✅')

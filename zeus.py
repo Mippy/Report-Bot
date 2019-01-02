@@ -367,7 +367,7 @@ async def report(ctx):
     except:
         rs.remove(reporter.id)
         cmdmsg = await ctx.send(f'{reporter.mention}, it appears your report is too long. Please rephrase your report so it may be submitted properly.')
-        await asyncio.sleep(10)
+        await asyncio.sleep(20)
         return await cmdmsg.delete()
     await cmdmsg.add_reaction('✅')
     await cmdmsg.add_reaction('❌')

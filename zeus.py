@@ -277,13 +277,10 @@ async def report(ctx):
                 await msg.delete()
                 return proof
         else:
-            if proof != "":
-                data = data + f'\n{msg.content}'
-            else:
-                data = msg.content
-            if message.startswith("What i"):
-                data = data.split()
-                data = data[0]
+            data = msg.content
+        if message.startswith("What i"):
+            data = data.split()
+            data = data[0]
         if not data:
             data = msg.content
         await cmdmsg.delete()
@@ -316,7 +313,7 @@ async def report(ctx):
                 pr = await requestproof(ctx, proof=pr)
                 if not pr:
                     return
-                pr = '\n' + proof + '\n' + pr
+                pr = proof + pr
                 return pr
             else:
                 await cmdmsg.delete()
@@ -324,7 +321,7 @@ async def report(ctx):
         ru = await requestupload(ctx, proof)
         if not ru:
             return
-        proof = ru
+        proof = '\n- ' + ru
         proof = await requestmore(ctx, proof)
         return proof
 

@@ -63,7 +63,7 @@ async def on_message(x):
     else:
         if x.guild.id != serverid:
             return
-        if x.author.id in lrs and x.channel.id == report.channel: # if the bot is expecting a response, don't do anything with the message here
+        if x.author.id in lrs and x.channel.id == reportchannel: # if the bot is expecting a response, don't do anything with the message here
             return
         if x.author.id in rs and x.channel.id == reportchannel: # check if bot needs response to either a poll or a text question
             return await x.delete()

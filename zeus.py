@@ -276,10 +276,7 @@ async def report(ctx):
                 await cmdmsg.delete()
                 await msg.delete()
                 return proof
-        else:
-            data = msg.content
-        if not data:
-            data = msg.content
+        data = msg.content
         await cmdmsg.delete()
         await msg.delete()
         return data

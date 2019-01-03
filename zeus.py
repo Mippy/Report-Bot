@@ -278,9 +278,6 @@ async def report(ctx):
                 return proof
         else:
             data = msg.content
-        if message.startswith("What i"):
-            data = data.split()
-            data = data[0]
         if not data:
             data = msg.content
         await cmdmsg.delete()
@@ -392,8 +389,8 @@ async def report(ctx):
         await qmsg.add_reaction('❌')
         cnx = mysql.connector.connect(user='root', host='localhost', password=dbpassword, database=dbname)
         cursor = cnx.cursor()
-        sql = f"INSERT INTO reports (messageid,reporterid,defence) VALUES ('{qmsg.id}','{reporter.id}','{username}')"
-        cursor.execute(sql)
+        sql = "INSERT INTO reports (messageid,reporterid,defence) VALUES ('%s','%s',%s)"
+        cursor.execute(sql, (qmsg.id, reporter.id, username))
         cnx.commit()
         cursor.close()
         cnx.close()

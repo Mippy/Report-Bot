@@ -278,7 +278,7 @@ async def report(ctx):
                 return proof
         data = msg.content
         if not data:
-            if not message.startswith("Looks like"):
+            if not message.startswith("That's not"):
                 message = f"That's not the data I was looking for. Try again?\n\n{message}"
             await cmdmsg.delete()
             await msg.delete()

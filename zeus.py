@@ -277,6 +277,12 @@ async def report(ctx):
                 await msg.delete()
                 return proof
         data = msg.content
+        if not data:
+            if not message.startswith("Looks like"):
+                message = f"That's not the data I was looking for. Try again?\n\n{message}"
+            await cmdmsg.delete()
+            await msg.delete()
+            return await requestinfo(message)
         await cmdmsg.delete()
         await msg.delete()
         return data

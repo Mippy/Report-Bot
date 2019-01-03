@@ -177,9 +177,9 @@ async def on_raw_reaction_add(payload):
             reporter = server.get_member(int(findata[0][1]))
             try:
                 if not comment:
-                    await reporter.send(f"Hey {reporter.mention},\nJust letting you know that your report against {findata[0][2]} has been APPROVED!\nThanks for helping us out!")
+                    await reporter.send(f"Your report against `{findata[0][2]}` has been approved.\nThanks for helping us out!")
                 else:
-                    await reporter.send(f"Hey {reporter.mention},\nJust letting you know that your report against {findata[0][2]} has been APPROVED!\nThanks for helping us out!\n\nP.S.: The staff member that approved your report left this comment: `{comment}`.")
+                    await reporter.send(f"Your report against `{findata[0][2]}`` has been approved!\nThanks for helping us out!\n\nP.S.: The staff member that approved your report left this comment: `{comment}`.")
             except: pass
             await asyncio.sleep(15)
             return await cmdmsg.delete()
@@ -227,9 +227,9 @@ async def on_raw_reaction_add(payload):
             reporter = server.get_member(int(findata[0][1]))
             try:
                 if not comment:
-                    await reporter.send(f"Hey {reporter.mention},\nJust letting you know that your report against {findata[0][2]} has been denied.\nThanks for trying to help us out, anyway! Good luck next time.")
+                    await reporter.send(f"Your report against `{findata[0][2]}`` has been denied.\nThanks for trying to help us out anyway!")
                 else:
-                    await reporter.send(f"Hey {reporter.mention},\nJust letting you know that your report against {findata[0][2]} has been denied.\nThanks for trying to help us out, anyway! Good luck next time.\n\nP.S.: The staff member that denied your report left this comment: `{comment}`.")
+                    await reporter.send(f"Your report against `{findata[0][2]}` has been denied.\nThanks for trying to help us out anyway!\n\nP.S.: The staff member that denied your report left this comment: `{comment}`.")
             except: pass
             await asyncio.sleep(15)
             return await cmdmsg.delete()

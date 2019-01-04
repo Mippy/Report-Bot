@@ -4,6 +4,7 @@ import mysql.connector
 import asyncio
 import json
 import random
+from datetime import datetime
 import re
 
 fp = open('config.json')
@@ -132,11 +133,15 @@ async def on_raw_reaction_add(payload):
         message = await channel.get_message(payload.message_id)
         queuechannel = server.get_channel(queuechannel)
         logchannel = server.get_channel(logchannel)
+        reportembed = message.embeds[0]
+        reportembed.timestamp = datetime.utcnow()
         def check2(x):
             return x.author.id == user.id and x.channel.id == queuechannel.id
         if emojiname == '✅':
             rs.append(user.id)
-            cmdmsg = await queuechannel.send(f'{user.mention}, it looks like you\'ve approved a report. Would you like to add a comment? (This will be sent to the user)')
+            reportembed.set_footer(text='Report approved')
+            reportembed.title = 'Report Approved'
+            cmdmsg = await queuechannel.send(f'{user.mention}, it looks like you\'ve approved a report. Would you like to add a comment? (This will be sent to the user.)\nIf you did not mean to do this: Do not touch other options, wait a minute and it will be reverted.')
             qmr.append(cmdmsg.id)
             await cmdmsg.add_reaction('✅')
             await cmdmsg.add_reaction('❌')
@@ -164,12 +169,11 @@ async def on_raw_reaction_add(payload):
             if str(reaction[0].emoji) == '❌':
                 comment = None
                 await cmdmsg.delete()
-            splitdata = message.content.split('The report above needs to be approved, or denied.')
+            await logchannel.send(embed=reportembed)
             if not comment:
-                logmessage = splitdata[0] + f"**Report approved by {user} ({user.mention}).** :white_check_mark:"
+                await logchannel.send(f"**The above report was approved by {user} ({user.mention}).** :white_check_mark:")
             else:
-                logmessage = splitdata[0] + f"**Report approved by {user} ({user.mention}) with the comment `{comment}`.** :white_check_mark:"
-            await logchannel.send(logmessage)
+                await logchannel.send(f"**The above report was approved by {user} ({user.mention}) with the comment `{comment}`.** :white_check_mark:")
             await message.delete()
             try:
                 await msg.delete()
@@ -186,7 +190,9 @@ async def on_raw_reaction_add(payload):
             return await cmdmsg.delete()
         elif emojiname == '❌':
             rs.append(user.id)
-            cmdmsg = await queuechannel.send(f'{user.mention}, it looks like you\'ve denied a report. Would you like to add a comment? (This will be sent to the user)')
+            reportembed.set_footer(text='Report denied')
+            reportembed.title = 'Report Denied'
+            cmdmsg = await queuechannel.send(f'{user.mention}, it looks like you\'ve denied a report. Would you like to add a comment? (This will be sent to the user.)\n\nIf you did not mean to do this: Do not touch other options, wait a minute and it will be reverted.')
             qmr.append(cmdmsg.id)
             await cmdmsg.add_reaction('✅')
             await cmdmsg.add_reaction('❌')
@@ -214,12 +220,11 @@ async def on_raw_reaction_add(payload):
             if str(reaction[0].emoji) == '❌':
                 comment = None
                 await cmdmsg.delete()
-            splitdata = message.content.split('The report above needs to be approved, or denied.')
+            await logchannel.send(embed=reportembed)
             if not comment:
-                logmessage = splitdata[0] + f"**Report denied by {user} ({user.mention}).** :x:"
+                await logchannel.send(f"**The above report was denied by {user} ({user.mention}).** :x:")
             else:
-                logmessage = splitdata[0] + f"**Report denied by {user} ({user.mention}) with the comment `{comment}`.** :x:"
-            await logchannel.send(logmessage)
+                await logchannel.send(f"**The above report was denied by {user} ({user.mention}) with the comment `{comment}`.** :x:")
             await message.delete()
             try:
                 await msg.delete()
@@ -253,7 +258,7 @@ async def report(ctx):
         return x.author.id == reporter.id and x.channel.id == ctx.channel.id
     def check2(x, y):
         return (str(x.emoji) == '✅' or str(x.emoji) == '❌') and y.id == reporter.id
-    async def requestinfo(message, proof=""):
+    async def requestinfo(message, previewmessage, proof=""):
         cmdmsg = await ctx.send(f'{reporter.mention}\n\n**{message}**')
         try:
             msg = await bot.wait_for('message', check=check, timeout=120.0)
@@ -262,6 +267,7 @@ async def report(ctx):
             msg = await ctx.send(f'{reporter.mention}, since it has been over a couple minutes without a response, this report has been closed automatically.\nYou can always open another with `!report`.')
             lrs.remove(reporter.id)
             rs.remove(reporter.id)
+            await previewmessage.delete()
             await asyncio.sleep(30)
             return await msg.delete()
         if message.startswith("P"):
@@ -283,7 +289,7 @@ async def report(ctx):
                 message = f"That's not the data I was looking for. Try again?\n\n{message}"
             await cmdmsg.delete()
             await msg.delete()
-            return await requestinfo(message)
+            return await requestinfo(message, previewmessage)
         if not re.match('^[a-zA-Z0-9$%#()[\]+-="\'/:.,@_|?!šŠčČžŽ ]*$', data):
             if not message.startswith("That's not"):
                 message = f"That's not the data I was looking for. Try again?\n\n{message}"
@@ -294,13 +300,13 @@ async def report(ctx):
         await msg.delete()
         return data
 
-    async def requestproof(ctx, proof=""):
-        async def requestupload(ctx, pr):
-            proof = await requestinfo(f"Please upload proof of these offences happening. (link, or file upload)", proof=pr)
+    async def requestproof(ctx, previewmessage, proof=""):
+        async def requestupload(ctx, pr, previewmessage):
+            proof = await requestinfo(f"Please upload proof of these offences happening. (link, or file upload)", previewmessage, proof=pr)
             if not proof:
                 return
             return proof
-        async def requestmore(ctx, pr):
+        async def requestmore(ctx, pr, previewmessage):
             lrs.remove(reporter.id)
             cmdmsg = await ctx.send(f"{reporter.mention}\n\n**Do you have any additional proof?**")
             await cmdmsg.add_reaction('✅')
@@ -317,7 +323,7 @@ async def report(ctx):
             if str(reaction[0].emoji) == '✅':
                 lrs.append(reporter.id)
                 await cmdmsg.delete()
-                pr = await requestproof(ctx, proof=pr)
+                pr = await requestproof(ctx, previewmessage, proof=pr)
                 if not pr:
                     return
                 pr = proof + pr
@@ -325,25 +331,75 @@ async def report(ctx):
             else:
                 await cmdmsg.delete()
                 return pr
-        ru = await requestupload(ctx, proof)
+        ru = await requestupload(ctx, proof, previewmessage)
         if not ru:
             return
         proof = '\n- ' + ru
-        proof = await requestmore(ctx, proof)
+        proof = await requestmore(ctx, proof, previewmessage)
         return proof
 
-    username = await requestinfo("What is the username of the person you are reporting?")
+    epreview = discord.Embed(color=0x448cff, title='Report Preview', description=f'Reported by {reporter.mention}')
+    epreview.add_field(name='Username', value='???', inline=False)
+    epreview.add_field(name='Offence', value='???', inline=False)
+    epreview.add_field(name='Gamemode', value='???', inline=False)
+    epreview.add_field(name='Proof', value='???', inline=False)
+    epreview.add_field(name='Comments', value='???', inline=False)
+    epreview.timestamp = datetime.utcnow()
+    preview = await ctx.send(embed=epreview, content=f'**Report Preview**: {reporter.mention}')
+    username = await requestinfo("What is the username of the person you are reporting?", preview)
     if not username:
         return
-    offenses = await requestinfo(f"What rules did `{username}` break?")
+    epreview.set_field_at(0, name='Username', value=username, inline=False)
+    try:
+        await preview.edit(embed=epreview, content=f'**Report Preview**: {reporter.mention}')
+    except:
+        await preview.delete()
+        lrs.remove(reporter.id)
+        rs.remove(reporter.id)
+        cmdmsg = await ctx.send(f'{reporter.mention}, it appears your report is too long. Please rephrase your report so it may be submitted properly.')
+        await asyncio.sleep(20)
+        return await cmdmsg.delete()
+    offenses = await requestinfo(f"What rules did `{username}` break?", preview)
     if not offenses:
         return
-    gamemode = await requestinfo(f"Which gamemode did this occur on?")
+    epreview.set_field_at(1, name='Offence', value=offenses, inline=False)
+    try:
+        await preview.edit(embed=epreview, content=f'**Report Preview**: {reporter.mention}')
+    except:
+        await preview.delete()
+        lrs.remove(reporter.id)
+        rs.remove(reporter.id)
+        cmdmsg = await ctx.send(f'{reporter.mention}, it appears your report is too long. Please rephrase your report so it may be submitted properly.')
+        await asyncio.sleep(20)
+        return await cmdmsg.delete()
+    gamemode = await requestinfo(f"Which gamemode did this occur on?", preview)
     if not gamemode:
         return
-    proof = await requestproof(ctx)
+    epreview.set_field_at(2, name='Gamemode', value=gamemode, inline=False)
+    try:
+        await preview.edit(embed=epreview, content=f'**Report Preview**: {reporter.mention}')
+    except:
+        await preview.delete()
+        lrs.remove(reporter.id)
+        rs.remove(reporter.id)
+        cmdmsg = await ctx.send(f'{reporter.mention}, it appears your report is too long. Please rephrase your report so it may be submitted properly.')
+        await asyncio.sleep(20)
+        return await cmdmsg.delete()
+    proof = await requestproof(ctx, preview)
     if not proof:
         return
+    epreview.set_field_at(3, name='Proof', value=proof, inline=False)
+    try:
+        await preview.edit(embed=epreview, content=f'**Report Preview**: {reporter.mention}')
+    except:
+        await preview.delete()
+        try:
+            lrs.remove(reporter.id)
+        except: pass
+        rs.remove(reporter.id)
+        cmdmsg = await ctx.send(f'{reporter.mention}, it appears your report is too long. Please rephrase your report so it may be submitted properly.')
+        await asyncio.sleep(20)
+        return await cmdmsg.delete()
     cmdmsg = await ctx.send(f'{reporter.mention}\n\n**Do you have any additional comments? (React accordingly)**')
     await cmdmsg.add_reaction('✅')
     await cmdmsg.add_reaction('❌')
@@ -359,25 +415,30 @@ async def report(ctx):
     if str(reaction[0].emoji) == '✅':
         lrs.append(reporter.id)
         await cmdmsg.delete()
-        comments = await requestinfo("What are those additional comments?")
+        comments = await requestinfo("What are those additional comments?", preview)
         lrs.remove(reporter.id)
         if not comments:
             return
     else:
         await cmdmsg.delete()
         comments = 'None'
+    epreview.set_field_at(4, name='Comments', value=comments, inline=False)
     try:
-        cmdmsg = await ctx.send(f'{reporter.mention}, **are you sure you would like to send this report to the staff team?:**\n\n**Username:** {username}\n**Offences:** {offenses}\n**Gamemode:** {gamemode}\n**Proof:** {proof}\n**Comments:** {comments}\n\nConfirmation here will send your report to the staff team.')
+        await preview.edit(embed=epreview, content=f'**Report Preview**: {reporter.mention}')
     except:
+        await preview.delete()
+        lrs.remove(reporter.id)
         rs.remove(reporter.id)
         cmdmsg = await ctx.send(f'{reporter.mention}, it appears your report is too long. Please rephrase your report so it may be submitted properly.')
         await asyncio.sleep(20)
         return await cmdmsg.delete()
+    cmdmsg = await ctx.send(f'{reporter.mention}, **are you sure you would like to send the report? A preview can be found above.**\n\nConfirmation here will send your report to the staff team.')
     await cmdmsg.add_reaction('✅')
     await cmdmsg.add_reaction('❌')
     try:
         reaction = await bot.wait_for('reaction_add', check=check2, timeout=120.0)
     except asyncio.TimeoutError:
+        await preview.delete()
         await cmdmsg.delete()
         msg = await ctx.send(f'{reporter.mention}, since it has been over a couple minutes without a response, this report has been closed automatically.\nYou can always open another with `!report`.')
         try:
@@ -387,6 +448,7 @@ async def report(ctx):
         await asyncio.sleep(30)
         return await msg.delete()
     if str(reaction[0].emoji) == '✅':
+        await preview.delete()
         await cmdmsg.delete()
         try:
             lrs.remove(reporter.id)
@@ -394,7 +456,10 @@ async def report(ctx):
         rs.remove(reporter.id)
         cmdmsg = await ctx.send(f'{reporter.mention}, thanks for your report!\nYou will receive updates about your report in a private message from me.')
         queue = ctx.guild.get_channel(queuechannel)
-        qmsg = await queue.send(f'───────────────────\n**{reporter}** ({reporter.mention}) Reported:\n\n**Username:** {username}\n**Offences:** {offenses}\n**Gamemode:** {gamemode}\n**Proof:** {proof}\n**Additonal Comments:** {comments}\n\nThe report above needs to be approved, or denied.')
+        epreview.title = 'Report'
+        epreview.timestamp = datetime.utcnow()
+        epreview.set_footer(text='The above report needs to be approved or denied.')
+        qmsg = await queue.send(embed=epreview)
         await qmsg.add_reaction('✅')
         await qmsg.add_reaction('❌')
         cnx = mysql.connector.connect(user='root', host='localhost', password=dbpassword, database=dbname)
@@ -407,6 +472,7 @@ async def report(ctx):
         await asyncio.sleep(20)
         await cmdmsg.delete()
     else:
+        await preview.delete()
         await cmdmsg.delete()
         try:
             lrs.remove(reporter.id)

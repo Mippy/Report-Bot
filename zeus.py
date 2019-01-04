@@ -459,6 +459,9 @@ async def report(ctx):
         epreview.title = 'Report'
         epreview.timestamp = datetime.utcnow()
         epreview.set_footer(text='The above report needs to be approved or denied.')
+        try:
+            await reporter.send(content='For your reference, here is a copy of the report you just submitted:', embed=epreview)
+        except: pass
         qmsg = await queue.send(embed=epreview)
         await qmsg.add_reaction('✅')
         await qmsg.add_reaction('❌')

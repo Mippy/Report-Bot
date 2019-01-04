@@ -290,7 +290,7 @@ async def report(ctx):
             await cmdmsg.delete()
             await msg.delete()
             return await requestinfo(message, previewmessage)
-        if not re.match('^[a-zA-Z0-9$%#()[\]+-="\'/:.,@_|?!šŠčČžŽ ]*$', data):
+        if not re.match('^[a-zA-Z0-9$%#()[\]<>+-="\'/:.,@_|?!šŠčČžŽ ]*$', data):
             if not message.startswith("That's not"):
                 message = f"That's not the data I was looking for. Try again?\n\n{message}"
             await cmdmsg.delete()

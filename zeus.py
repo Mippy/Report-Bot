@@ -19,16 +19,13 @@ serverid = data['server']
 fp.close()
 
 if serverid == 269112125316661248:
-    servername = "Sky Kingdoms"
     forumsurl = 'https://www.skykingdoms.net'
 if serverid == 260867503373156355:
-    servername = "Project Wonder"
     forumsurl = 'https://eusurvival-mc.enjin.com'
 if serverid == 508109177172918273:
-    servername = "the testing server"
     forumsurl = 'forumsurl'
 
-bot = commands.AutoShardedBot(command_prefix='!', case_insensitive=True, activity=discord.Game(name=f'on {servername}'), status=discord.Status.dnd)
+bot = commands.AutoShardedBot(command_prefix='!', case_insensitive=True, activity=discord.Activity(type=discord.ActivityType.watching, name=f'the reports come in'), status=discord.Status.dnd)
 bot.remove_command('help')
 
 lrs = []

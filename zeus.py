@@ -18,13 +18,6 @@ dbpassword = data['dbpassword']
 serverid = data['server']
 fp.close()
 
-if serverid == 269112125316661248:
-    forumsurl = 'https://www.skykingdoms.net'
-if serverid == 260867503373156355:
-    forumsurl = 'https://eusurvival-mc.enjin.com'
-if serverid == 508109177172918273:
-    forumsurl = 'forumsurl'
-
 bot = commands.AutoShardedBot(command_prefix='!', case_insensitive=True, activity=discord.Activity(type=discord.ActivityType.watching, name=f'the reports come in'), status=discord.Status.dnd)
 bot.remove_command('help')
 
@@ -91,7 +84,7 @@ async def on_message(x):
             cnx.close()
             if findata:
                 await x.delete()
-                msg = await x.channel.send(f'{x.author.mention}, sorry! It looks like you\'ve been blocked from sending reports.\nYour report can be sent on the forums: {forumsurl}.')
+                msg = await x.channel.send(f'{x.author.mention}, sorry! It looks like you\'ve been blocked from sending reports.\nMessage a staff member to submit a report.')
                 await asyncio.sleep(20)
                 return await msg.delete()
         await bot.process_commands(x)

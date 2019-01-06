@@ -328,7 +328,7 @@ async def report(ctx):
         proof = await requestmore(ctx, proof, previewmessage)
         return proof
 
-    epreview = discord.Embed(color=0x448cff, title='Report Preview', description=f'Reported by {reporter.mention}')
+    epreview = discord.Embed(color=0x448cff, title='Report Preview', description=f'Reported by {reporter} ({reporter.mention})')
     epreview.add_field(name='Username', value='???', inline=False)
     epreview.add_field(name='Offence', value='???', inline=False)
     epreview.add_field(name='Gamemode', value='???', inline=False)

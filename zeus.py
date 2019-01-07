@@ -131,7 +131,7 @@ async def on_raw_reaction_add(payload):
             rs.append(user.id)
             reportembed.set_footer(text='Report approved')
             reportembed.title = 'Report Approved'
-            cmdmsg = await queuechannel.send(f'{user.mention}, it looks like you\'ve approved a report. Would you like to add a comment? (This will be sent to the user.)\nIf you did not mean to do this: Do not touch other options, wait a minute and it will be reverted.')
+            cmdmsg = await queuechannel.send(f'{user.mention}, it looks like you\'ve approved a report. Would you like to add a comment? (This will be sent to the user.)\n\nIf you did not mean to do this: Do not touch other options, wait a minute and it will be reverted.')
             qmr.append(cmdmsg.id)
             await cmdmsg.add_reaction('✅')
             await cmdmsg.add_reaction('❌')

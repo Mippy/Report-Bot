@@ -237,7 +237,7 @@ async def report(ctx):
     reporter = ctx.author
     cmdmsg = ctx.message
     if ctx.channel.id != reportchannel:
-        await ctx.message.delete()
+        await cmdmsg.delete()
         cmdmsg = await ctx.send(f'{reporter.mention}, please send your request in <#{reportchannel}> instead.')
         await asyncio.sleep(5)
         return await cmdmsg.delete()

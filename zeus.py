@@ -390,7 +390,7 @@ async def report(ctx):
         cmdmsg = await ctx.send(f'{reporter.mention}, it appears your report is too long. Please rephrase your report so it may be submitted properly.')
         await asyncio.sleep(20)
         return await cmdmsg.delete()
-    cmdmsg = await ctx.send(f'{reporter.mention}\n\n**Do you have any additional comments? (React accordingly)**')
+    cmdmsg = await ctx.send(f'{reporter.mention}\n\n**Would you like to add a comment? (React accordingly)**')
     await cmdmsg.add_reaction('✅')
     await cmdmsg.add_reaction('❌')
     try:
@@ -405,7 +405,7 @@ async def report(ctx):
     if str(reaction[0].emoji) == '✅':
         lrs.append(reporter.id)
         await cmdmsg.delete()
-        comments = await requestinfo("What are those additional comments?", preview)
+        comments = await requestinfo("What is the comment?", preview)
         lrs.remove(reporter.id)
         if not comments:
             return

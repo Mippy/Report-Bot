@@ -27,10 +27,10 @@ qmr = []
 
 def is_staff(user):
     server = bot.get_guild(int(serverid))
-    helper = discord.utils.get(server.roles, id=269116874090872832)
-    moderator = discord.utils.get(server.roles, id=269116795984674816)
-    admin = discord.utils.get(server.roles, id=269116527930900480)
-    owner = discord.utils.get(server.roles, id=269115103713034240)
+    helper = discord.utils.get(server.roles, name='Helper')
+    moderator = discord.utils.get(server.roles, name='Moderator')
+    admin = discord.utils.get(server.roles, name='Admin')
+    owner = discord.utils.get(server.roles, name='Owner')
     user = server.get_member(user.id)
     if user in helper.members or user in moderator.members or user in admin.members or user in owner.members or user.id == 169275259026014208:
         return True

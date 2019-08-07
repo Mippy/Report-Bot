@@ -6,6 +6,7 @@ import json
 import random
 from datetime import datetime
 import re
+import os
 
 fp = open('config.json')
 data = json.load(fp)
@@ -53,7 +54,7 @@ async def on_message(x):
             await asyncio.sleep(10)
             await x.delete()
     else:
-        if x.guild.id != serverid:
+        if x.guild and x.guild.id != serverid:
             return
         if x.author.id in lrs and x.channel.id == reportchannel: # if the bot is expecting a response, don't do anything with the message here
             return
@@ -233,11 +234,28 @@ async def on_raw_reaction_add(payload):
         return
 
 @bot.command()
+async def restart(ctx):
+    m = ctx.message
+    u = ctx.author
+    c = await is_staff(u)
+    if not c:
+        try:
+            await m.delete()
+        except: pass
+        m = await ctx.send(f'{u.mention}, you do not have permission for this command.')
+        await asyncio.sleep(5)
+        return await m.delete()
+    os.system('python3.6 zeus.py &')
+    await bot.logout()
+
+@bot.command()
 async def report(ctx):
     reporter = ctx.author
     cmdmsg = ctx.message
     if ctx.channel.id != reportchannel:
-        await cmdmsg.delete()
+        try:
+            await cmdmsg.delete()
+        except: pass
         cmdmsg = await ctx.send(f'{reporter.mention}, please send your request in <#{reportchannel}> instead.')
         await asyncio.sleep(5)
         return await cmdmsg.delete()

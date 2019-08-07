@@ -25,13 +25,13 @@ lrs = []
 rs = []
 qmr = []
 
-def is_staff(user):
+async def is_staff(user):
     server = bot.get_guild(int(serverid))
     helper = discord.utils.get(server.roles, name='Helper')
     moderator = discord.utils.get(server.roles, name='Moderator')
     admin = discord.utils.get(server.roles, name='Admin')
     owner = discord.utils.get(server.roles, name='Owner')
-    user = server.get_member(user.id)
+    user = await server.fetch_member(user.id)
     if user in helper.members or user in moderator.members or user in admin.members or user in owner.members or user.id == 169275259026014208:
         return True
     return False
@@ -98,10 +98,10 @@ async def on_raw_reaction_add(payload):
     fp.close()
     emojiname = payload.emoji.name
     server = bot.get_guild(serverid)
-    user = server.get_member(payload.user_id)
+    user = await server.fetch_member(payload.user_id)
     if payload.channel_id != queuechannel:
         return
-    if not is_staff(user):
+    if not await is_staff(user):
         return
     if user.id in rs:
         return
@@ -120,7 +120,7 @@ async def on_raw_reaction_add(payload):
     if findata:
         findata = findata
         channel = server.get_channel(queuechannel)
-        message = await channel.get_message(payload.message_id)
+        message = await channel.fetch_message(payload.message_id)
         queuechannel = server.get_channel(queuechannel)
         logchannel = server.get_channel(logchannel)
         reportembed = message.embeds[0]
@@ -169,7 +169,7 @@ async def on_raw_reaction_add(payload):
                 await msg.delete()
             except: pass
             cmdmsg = await queuechannel.send(f'{user.mention} report successfully approved. :white_check_mark:')
-            reporter = server.get_member(int(findata[0][1]))
+            reporter = await server.fetch_member(int(findata[0][1]))
             try:
                 if not comment:
                     await reporter.send(f"Your report against `{findata[0][2]}` has been approved.\nThanks for helping us out!")
@@ -220,7 +220,7 @@ async def on_raw_reaction_add(payload):
                 await msg.delete()
             except: pass
             cmdmsg = await queuechannel.send(f'{user.mention} report successfully denied. :white_check_mark:')
-            reporter = server.get_member(int(findata[0][1]))
+            reporter = await server.fetch_member(int(findata[0][1]))
             try:
                 if not comment:
                     await reporter.send(f"Your report against `{findata[0][2]}` has been denied.\nThanks for trying to help us out anyway!")

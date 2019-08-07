@@ -159,11 +159,11 @@ async def on_raw_reaction_add(payload):
             if str(reaction[0].emoji) == '❌':
                 comment = None
                 await cmdmsg.delete()
-            await logchannel.send(embed=reportembed)
             if not comment:
-                await logchannel.send(f"**The above report was approved by {user} ({user.mention}).** :white_check_mark:")
+                c = f"**The report below was approved by {user} ({user.mention}).** :white_check_mark:"
             else:
-                await logchannel.send(f"**The above report was approved by {user} ({user.mention}) with the comment `{comment}`.** :white_check_mark:")
+                c = f"**The report below was approved by {user} ({user.mention}) with the comment `{comment}`.** :white_check_mark:"
+            await logchannel.send(c, embed=reportembed)
             await message.delete()
             try:
                 await msg.delete()
@@ -210,11 +210,11 @@ async def on_raw_reaction_add(payload):
             if str(reaction[0].emoji) == '❌':
                 comment = None
                 await cmdmsg.delete()
-            await logchannel.send(embed=reportembed)
             if not comment:
-                await logchannel.send(f"**The above report was denied by {user} ({user.mention}).** :x:")
+                c = f"**The report below was denied by {user} ({user.mention}).** :x:"
             else:
-                await logchannel.send(f"**The above report was denied by {user} ({user.mention}) with the comment `{comment}`.** :x:")
+                c = f"**The report below was denied by {user} ({user.mention}) with the comment `{comment}`.** :x:"
+            await logchannel.send(c, embed=reportembed)
             await message.delete()
             try:
                 await msg.delete()

@@ -285,12 +285,11 @@ async def report(ctx):
                 ext = attachment.filename.split('.')
                 ext.reverse()
                 ext = ext[0]
-                await attachment.save(fp=f'/var/www/i.williamlomas.me/zeusuploads/{filehash}.{ext}')
-                data = f'https://i.williamlomas.me/zeusuploads/{filehash}.{ext}'
-                proof = data
+                await attachment.save(fp=f'/var/www/zeusuploads/{filehash}.{ext}')
+                data = f'https://zeusuploads-i.sabel.dev/{filehash}.{ext}'
                 await cmdmsg.delete()
                 await msg.delete()
-                return proof
+                return data
         data = msg.content
         if not data:
             if not message.startswith("That's not"):

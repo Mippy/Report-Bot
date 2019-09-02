@@ -33,7 +33,7 @@ async def is_staff(user):
     admin = discord.utils.get(server.roles, name='Admin')
     owner = discord.utils.get(server.roles, name='Owner')
     user = await server.fetch_member(user.id)
-    if user in helper.members or user in moderator.members or user in admin.members or user in owner.members or user.id == 169275259026014208:
+    if user in helper.members or user in moderator.members or user in admin.members or user in owner.members or user.id == 617450312625684523:
         return True
     return False
 
@@ -42,13 +42,13 @@ async def on_message(x):
     if x.author.id == bot.user.id:
         return
     if x.channel.id == 408777469290872843: # rank sync checkers
-        if x.author.id != 408776943610363904 or x.author.id != 169275259026014208:
+        if x.author.id != 408776943610363904 or x.author.id != 617450312625684523:
             await x.delete()
         elif x.author.id == 408776943610363904:
             await asyncio.sleep(10)
             await x.delete()
     if x.channel.id == 409739062182674432: # rank sync checkers
-        if x.author.id != 409734806637641728 or x.author.id != 169275259026014208:
+        if x.author.id != 409734806637641728 or x.author.id != 617450312625684523:
             await x.delete()
         elif x.author.id == 409734806637641728:
             await asyncio.sleep(10)

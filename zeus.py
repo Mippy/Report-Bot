@@ -125,7 +125,6 @@ async def on_raw_reaction_add(payload):
         queuechannel = server.get_channel(queuechannel)
         logchannel = server.get_channel(logchannel)
         reportembed = message.embeds[0]
-        reportembed.timestamp = datetime.utcnow()
         def check2(x):
             return x.author.id == user.id and x.channel.id == queuechannel.id
         if emojiname == '✅':

@@ -247,7 +247,7 @@ async def restart(ctx):
         m = await ctx.send(f'{u.mention}, you do not have permission for this command.')
         await asyncio.sleep(5)
         return await m.delete()
-    os.system('python3.6 zeus.py &')
+    os.system('python zeus.py &')
     await bot.logout()
 
 @bot.command()

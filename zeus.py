@@ -18,6 +18,7 @@ dbname = data['database']
 dbpassword = data['dbpassword']
 serverid = data['server']
 uploadsfolder = data['ufolder']
+uploadsdomain = data['udomain']
 fp.close()
 
 bot = commands.AutoShardedBot(command_prefix='!', case_insensitive=True, activity=discord.Activity(type=discord.ActivityType.watching, name=f'the reports come in'), status=discord.Status.dnd)
@@ -286,7 +287,7 @@ async def report(ctx):
                 ext.reverse()
                 ext = ext[0]
                 await attachment.save(fp=f'{uploadsfolder}{filehash}.{ext}')
-                data = f'https://zeusuploads-i.sabel.dev/{filehash}.{ext}'
+                data = f'{uploadsdomain}{filehash}.{ext}'
                 await cmdmsg.delete()
                 await msg.delete()
                 return data

@@ -15,6 +15,7 @@ reportchannel = data['reportchannel']
 queuechannel = data['queuechannel']
 logchannel = data['logchannel']
 dbname = data['database']
+dbusername = data['dbusername']
 dbpassword = data['dbpassword']
 serverid = data['server']
 uploadsfolder = data['ufolder']
@@ -77,7 +78,7 @@ async def on_message(x):
             await asyncio.sleep(5)
             return await cmdmsg.delete()
         if x.channel.id == reportchannel and x.content.split()[0] == '!report':
-            cnx = mysql.connector.connect(user='root', host='localhost', password=dbpassword, database=dbname)
+            cnx = mysql.connector.connect(user=dbusername, host='localhost', password=dbpassword, database=dbname)
             cursor = cnx.cursor()
             cursor.execute(f"SELECT * FROM blacklist WHERE id='{x.author.id}'")
             findata = []
@@ -112,7 +113,7 @@ async def on_raw_reaction_add(payload):
         return
     def check(x, y):
         return (str(x.emoji) == '✅' or str(x.emoji) == '❌') and y.id == user.id
-    cnx = mysql.connector.connect(user='root', host='localhost', password=dbpassword, database=dbname)
+    cnx = mysql.connector.connect(user=dbusername, host='localhost', password=dbpassword, database=dbname)
     cursor = cnx.cursor()
     cursor.execute(f"SELECT * FROM reports WHERE messageid='{payload.message_id}'")
     findata = []
@@ -473,7 +474,7 @@ async def report(ctx):
         qmsg = await queue.send(embed=epreview)
         await qmsg.add_reaction('✅')
         await qmsg.add_reaction('❌')
-        cnx = mysql.connector.connect(user='root', host='localhost', password=dbpassword, database=dbname)
+        cnx = mysql.connector.connect(user=dbusername, host='localhost', password=dbpassword, database=dbname)
         cursor = cnx.cursor()
         sql = "INSERT INTO reports (messageid,reporterid,defence) VALUES ('%s','%s',%s)"
         cursor.execute(sql, (qmsg.id, reporter.id, username))
